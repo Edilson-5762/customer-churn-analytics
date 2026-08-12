@@ -59,7 +59,7 @@ Aplicação do método do **Intervalo Interquartil (IQR)** para identificação 
 
 | Análise de Outliers | Gráficos Boxplot & Quartis |
 | :---: | :---: |
-| ![Outliers](reports/figures/Outliers.png) | ![Boxplots](reports/figures/OutliertseBoxplots.png) |
+| ![Outliers](reports/figures/Outliers.png) | ![Boxplots](reports/figures/OutlierseBoxplots.png) |
 
 ---
 
