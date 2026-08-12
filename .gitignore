@@ -1,0 +1,16 @@
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Cache do Python e Jupyter
+__pycache__/
+.ipynb_checkpoints/
+
+# Arquivos temporários do Office (Excel aberto)
+~$*.xlsx
+~$*.xls
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
