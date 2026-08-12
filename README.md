@@ -1,77 +1,140 @@
 # 📊 Customer Churn Analytics: Preditividade & Inteligência de Retenção
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?style=for-the-badge&logo=pandas&logoColor=white)
-![Estatística](https://img.shields.io/badge/Method-IV%20%26%20WoE-green?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
+![Excel](https://img.shields.io/badge/Excel-Advanced%20Analytics-217346?style=for-the-badge&logo=microsoft-excel&logoColor=white)
+![Estatística](https://img.shields.io/badge/Método-IV%20%26%20WoE-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Concluído-brightgreen?style=for-the-badge)
 
-Análise diagnóstica e preditiva desenvolvida para identificar os fatores críticos associados à evasão de clientes (*churn*) em uma instituição bancária. O projeto combina **tratamento rigoroso de outliers**, **engenharia de recursos (feature engineering)** e **mensuração de poder preditivo** utilizando as métricas **Information Value (IV)** e **Weight of Evidence (WoE)** na sua formulação estatística canônica.
+Análise diagnóstica, estatística e preditiva desenvolvida para identificar os fatores críticos associados à evasão de clientes (*churn*) em uma instituição bancária. O projeto integra **engenharia de recursos**, **discretização/binning de dados**, **análise de correlação**, **tratamento rigoroso de outliers via IQR** e **mensuração do Valor da Informação (IV)**.
 
 ---
 
-## 🧭 Sumário
-- [Visão Geral & Contexto de Negócio](#-visão-geral--contexto-de-negócio)
-- [Arquitetura e Pipeline de Dados](#-arquitetura-e-pipeline-de-dados)
-- [Metodologia Estatística (IV & WoE)](#-metodologia-estatística-iv--woe)
-- [Principais Insights & Achados Preditivos](#-principais-insights--achados-preditivos)
-- [Tratamento de Anomalias & Outliers](#-tratamento-de-anomalias--outliers)
-- [Estrutura do Repositório](#-estrutura-do-repositório)
-- [Tech Stack & Ferramentas](#-tech-stack--ferramentas)
-- [Como Executar o Projeto Localmente](#-como-executar-o-projeto-localmente)
-- [Responsividade & Visualização do Projeto](#-responsividade--visualização-do-projeto)
-- [Conclusão & Próximos Passos](#-conclusão--próximos-passos)
+## 🖼️ Galeria de Evidências Visuais & Arquitetura da Planilha
+
+### 1. Base Pronta com Engenharia de Atributos
+Tratamento e enriquecimento de dados originais com a criação de faixas operacionais (`FaixaIdade`, `FaixaScore`, `FaixaTenure`, `FaixaSaldo`, `FaixaSalarial`, `FaixaPontos`).
+
+![Base Projeto](reports/figures/Customer-Churn-Records-Projeto.png)
+
+---
+
+### 2. Segmentação de Coortes (Ativos vs. Cancelados)
+Separação clara da base de clientes para análise comparativa de comportamento e perfil de evasão.
+
+| Clientes Ativos | Clientes Cancelados |
+| :---: | :---: |
+| ![Base Ativos](reports/figures/BaseAtivos.png) | ![Base Cancelados](reports/figures/BaseCancelados.png) |
+
+---
+
+### 3. Matriz de Cálculos de Information Value (IV)
+Mapeamento do poder de separação entre clientes Ativos vs. Cancelados por categoria de atributo.
+
+![Cálculos de IV](reports/figures/BaseIV.png)
+
+---
+
+### 4. Matriz de Correlação & Regras de Categorização
+Análise de correlação entre variáveis contínuas e estruturação das tabelas de domínios (*binning*).
+
+| Matriz de Correlação | Regras de Faixas |
+| :---: | :---: |
+| ![Correlação](reports/figures/Correlação.png) | ![Faixas](reports/figures/Faixas.png) |
+
+---
+
+### 5. Triagem & Critério Técnico de Seleção de Atributos
+Classificação das variáveis disponíveis com regras explícitas de inclusão/exclusão baseadas no IV.
+
+![Critérios de Seleção](reports/figures/Estatística.png)
+
+* **`Complain` (IV = 1,994):** Identificado como *data leakage* (correlação extrema/direta com a saída do cliente), isolado das análises secundárias.
+* **`NumOfProducts` (IV = 0,723) & `FaixaIdade` (IV = 0,649):** Selecionados devido ao altíssimo valor preditivo sem contaminação direta.
+* **`IsActiveMember` (IV = 0,388) & `Geography` (IV = 0,373):** Relevantes para estratégias de engajamento e segmentação regional.
+
+---
+
+### 6. Diagnóstico Estatístico de Outliers & Boxplots
+Aplicação do método do **Intervalo Interquartil (IQR)** para identificação de limites e presença de anomalias em variáveis contínuas (`Idade` e `Balance`).
+
+| Análise de Outliers | Gráficos Boxplot & Quartis |
+| :---: | :---: |
+| ![Outliers](reports/figures/Outliers.png) | ![Boxplots](reports/figures/OutliertseBoxplots.png) |
 
 ---
 
 ## 📌 Visão Geral & Contexto de Negócio
 
-A retenção de clientes é uma das alavancas mais críticas para a sustentabilidade financeira de serviços bancários, dado que o Custo de Aquisição de Clientes (CAC) supera frequentemente o custo de manutenção da base ativa.
-
-Este projeto investiga os microdados de uma carteira de clientes com o objetivo de responder a três perguntas centrais de negócio:
-1. **Quais variáveis demográficas e operacionais de fato segregam clientes propensos ao churn?**
-2. **Qual é o peso real de cada atributo no risco final de cancelamento?**
-3. **Como orientar campanhas de retenção direcionadas para maximizar o ROI do time de CRM?**
+O Custo de Aquisição de Clientes (CAC) no setor bancário exige estratégias ativas de retenção. Este estudo analisa a carteira para responder a três perguntas principais:
+1. **Quais variáveis demográficas e operacionais segregam clientes propensos ao churn?**
+2. **Qual é o impacto real de cada atributo no risco final de cancelamento?**
+3. **Como orientar ações preventivas direcionadas para maximizar o retorno das campanhas de retenção?**
 
 ---
 
-## 🏗️ Arquitetura e Pipeline de Dados
+## 📐 Metodologia Estatística (IV & WoE)
 
-O projeto segue a arquitetura de pipeline modular de ciência de dados:
+Para avaliar o poder de discriminação das variáveis em relação à variável resposta (`Exited`: 0 = Ativo, 1 = Cancelado), utilizou-se o cálculo de **Information Value (IV)**:
+
+$$IV = \sum_{i=1}^{k} \left( \% \text{Ativos}_i - \% \text{Cancelados}_i \right) \times \ln \left( \frac{\% \text{Ativos}_i}{\% \text{Cancelados}_i} \right)$$
+
+### Régua de Preditividade do IV:
+* **$< 0{,}02$**: Inútil / Sem poder preditivo
+* **$0{,}02 \text{ a } 0{,}10$**: Poder preditivo fraco
+* **$0{,}10 \text{ a } 0{,}30$**: Poder preditivo médio
+* **$0{,}30 \text{ a } 0{,}50$**: Poder preditivo forte
+* **$> 0{,}50$**: Poder preditivo muito alto (*exige análise de risco de vazamento de dados*)
+
+---
+
+## 📊 Summary das Variáveis Analisadas
+
+| Variável | Valor de IV | Classificação | Ação / Diagnóstico |
+| :--- | :---: | :---: | :--- |
+| **Complain** | **1,994** | Extremo (Leakage) | Descartado da modelagem direta devido à correlação quase perfeita com cancelamento. |
+| **NumOfProducts** | **0,723** | Muito Alta | Selecionado. Forte indicador de retenção por engajamento de produto. |
+| **FaixaIdade** | **0,649** | Muito Alta | Selecionado. Faixa de 46 a 60 anos apresenta maior taxa proporcional de cancelamento. |
+| **IsActiveMember** | **0,388** | Forte | Indicador funcional binário de engajamento operacional. |
+| **Geography** | **0,373** | Forte | Discrepância geográfica marcante na operação (especialmente Alemanha). |
+| **FaixaSaldo** | **0,292** | Média | Selecionado para análise quantitativa de patrimônio sob custódia. |
+| **FaixaTenure** | **0,056** | Fraca | Baixa diferenciação por tempo de relacionamento isolado. |
+| **FaixaScore** | **0,051** | Fraca | Score de crédito isolado não segrega risco de churn. |
+
+---
+
+## 📂 Estrutura do Repositório
 
 ```text
-[ Base Bruta (data/raw) ] 
-          │
-          ▼
-[ Pipeline de Limpeza & Outliers ] ──► (Tratamento ITR / Z-Score)
-          │
-          ▼
-[ Eng. de Recursos & Discretização ] ──► (Binning por Faixa Etária, Score, etc.)
-          │
-          ▼
-[ Cálculo de IV & WoE (Canônico) ] ──► (Logaritmo Natural e Separação de Classes)
-          │
-          ▼
-[ Matriz de Insights & Relatório ] ──► (Geração de Artefatos em reports/figures)
-📐 Metodologia Estatística (IV & WoE)Para avaliar o poder de separação de cada variável individual em relação à variável resposta (Churn: 0 = Ativo, 1 = Cancelado), foi aplicada a abordagem clássica de Weight of Evidence (WoE) e Information Value (IV).Formulações Aplicadas:Weight of Evidence (WoE):$$WoE_i = \ln \left( \frac{\% \text{Ativos}_i}{\% \text{Cancelados}_i} \right)$$Information Value (IV - Canônico):$$IV = \sum_{i=1}^{k} \left( \% \text{Ativos}_i - \% \text{Cancelados}_i \right) \times WoE_i$$Régua de Interpretação Preditiva do IV:$< 0{,}02$: Inútil / Sem poder preditivo$0{,}02 \text{ a } 0{,}10$: Poder preditivo fraco$0{,}10 \text{ a } 0{,}30$: Poder preditivo médio$0{,}30 \text{ a } 0{,}50$: Poder preditivo forte$> 0{,}50$: Poder preditivo muito alto (atenção para possível data leakage)📊 Principais Insights & Achados PreditivosAbaixo estão os resultados consolidados do poder de discriminação das variáveis analisadas:VariávelIV Canônico (ln)Classificação PreditivaDiagnóstico de NegócioFaixa Idade0.67Muito AltaO grupo de 46 a 60 anos concentra 41,3% dos cancelamentos (contra 10,1% dos ativos). Ponto focal primário para retenção.Geografia0.17MédiaClientes da Alemanha registram taxa desproporcional de churn (39,9% dos cancelados vs. 21,3% dos ativos).Gênero0.07FracaPúblico feminino representa 55,9% do total de cancelamentos, indicando ruído ou fricção na jornada desse segmento.Faixa Score0.00Sem PreditividadeO Score de Crédito isolado não diferencia clientes ativos de cancelados nesta carteira.⚠️ Nota Metodológica: Embora o IV aponte forte associação estatística em variáveis como Idade e Geografia, a análise reforça a importância de diferenciar correlação/associação de causalidade direta, utilizando esses atributos como direcionadores de risco e segmentação estratégica.🧹 Tratamento de Anomalias & OutliersPara garantir a confiabilidade estatística e evitar distorções nas métricas agregadas:Mantivemos a rastreabilidade total salvando o dataset bruto original e a versão com tratamento de limites operacionais na pasta data/raw/.Foram analisadas variáveis numéricas contínuas para remoção/atenuamento de valores discrepantes que pudessem enviesar os cálculos de proporção e bins de agrupamento.📂 Estrutura do RepositórioPlaintextcustomer-churn-analytics/
+customer-churn-analytics/
 ├── data/
-│   ├── raw/                  # Datasets brutos (com e sem tratamento de outliers)
+│   ├── raw/                  # Datasets brutos (Customer-Churn-Records)
 │   └── processed/            # Datasets tratados e enriquecidos
-├── notebooks/
-│   └── churn_analysis.ipynb  # Notebook com EDA, eng. de atributos e cálculo de IV/WoE
+├── notebooks/                # Jupyter Notebooks com análises suplementares em Python
 ├── reports/
-│   └── figures/              # Gráficos exportados para documentação e apresentações
-├── .gitignore                # Regras de exclusão do Git (ignora caches e temporários)
-├── README.md                 # Documentação executiva e técnica do projeto
-└── requirements.txt          # Dependências e bibliotecas Python do projeto
-🛠️ Tech Stack & FerramentasLinguagem: Python 3.10+Manipulação & Análise de Dados: pandas, numpyVisualização de Dados: matplotlib, seabornI/O & Leitura de Planilhas: openpyxlAmbiente de Desenvolvimento: Visual Studio Code / Jupyter NotebooksControle de Versão: Git & GitHub🚀 Como Executar o Projeto LocalmentePré-requisitosPython 3.10 ou superior instalado.Git configurado na máquina.Passo a PassoClonar o repositório:Bashgit clone [https://github.com/Edilson-5762/customer-churn-analytics.git](https://github.com/Edilson-5762/customer-churn-analytics.git)
-cd customer-churn-analytics
-Criar e ativar um ambiente virtual (recomendado):Bash# Linux/macOS
-python3 -m venv .venv
-source .venv/bin/activate
+│   └── figures/              # Capturas das evidências técnicas e gráficos (.png)
+├── .gitignore                # Controle de exclusão do Git
+├── README.md                 # Documentação executiva, estatística e visual
+└── requirements.txt          # Bibliotecas do ambiente Python
+🛠️ Tecnologias & Ferramentas Utilizadas
+Microsoft Excel / WPS Spreadsheets: Tabela Dinâmica, Fórmulas Estatísticas, Quartis, Correlação, Tratamento de Outliers.
 
-# Windows (PowerShell)
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-Instalar as dependências:Bashpip install -r requirements.txt
-Executar a análise:Abra o projeto no VS Code ou inicie o Jupyter Server:Bashjupyter notebook
-Navegue até a pasta notebooks/ e execute o notebook churn_analysis.ipynb.📱 Responsividade & Visualização do ProjetoA documentação em Markdown deste repositório foi estruturada seguindo as diretrizes de design responsivo do GitHub:Tabelas Adaptáveis: Renderizam perfeitamente em telas de smartphones, tablets e monitores Ultrawide.Blocos de Código & Fórmulas: Formatados com sintaxe destacada (Syntax Highlighting) para rápida leitura técnica.Badges Dinâmicos: Facilitam a identificação imediata da stack utilizada e status do projeto.💡 Conclusão & Próximos PassosAções Recomendadas de Negócio:Criar um plano de onboarding e relacionamento específico para clientes na faixa de 46 a 60 anos.Realizar uma auditoria operacional na operação da Alemanha para entender fricções no produto local.Evolução Técnica:Implementação de modelos preditivos supervisionados (XGBoost, Random Forest e Regressão Logística).Uso das pontuações WoE como features diretas para a Regressão Logística (Scorecard de Churn).✉️ Desenvolvido por Edilson Moraes — Sinta-se à vontade para conectar e enviar feedbacks no LinkedIn.[https://www.linkedin.com/in/edilson-moraes-047128408/]
+Python (Data Stack): pandas, numpy, matplotlib, seaborn para validação e automação.
+
+Git & GitHub: Versionamento de código e documentação técnica responsiva.
+
+🚀 Como Executar o Projeto Localmente
+Clonar o repositório:
+
+Bash
+git clone [https://github.com/Edilson-5762/customer-churn-analytics.git](https://github.com/Edilson-5762/customer-churn-analytics.git)
+cd customer-churn-analytics
+Visualizar a Planilha de Análise:
+
+Acesse a pasta data/raw/ e abra o arquivo Excel principal para inspecionar todas as abas e memórias de cálculo.
+
+Executar o ambiente Python:
+
+Bash
+pip install -r requirements.txt
+jupyter notebook
+📱 Design Responsivo: Este repositório foi formatado para garantir legibilidade ideal em dispositivos móveis, tablets e telas widescreen.
